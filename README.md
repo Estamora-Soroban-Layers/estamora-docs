@@ -10,6 +10,7 @@ verdict means.**
 [![Application](https://img.shields.io/badge/app-estamora--app.vercel.app-black?logo=vercel)](https://estamora-app.vercel.app)
 [![Product pitch](https://img.shields.io/badge/watch-5--minute%20pitch-blueviolet)](https://estamora-docs.vercel.app/assets/estamora-pitch.mp4)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Contributors](https://img.shields.io/github/contributors/Estamora-Soroban-Layers/estamora-docs)](https://github.com/Estamora-Soroban-Layers/estamora-docs/graphs/contributors)
 
 **Read it: <https://estamora-docs.vercel.app>**
 
