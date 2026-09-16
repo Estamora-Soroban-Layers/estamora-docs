@@ -1,0 +1,65 @@
+version: 2
+
+updates:
+  # This repository publishes prose and a video, and both are checked by machinery whose version
+  # matters more than it looks. `mkdocs-material` decides what `strict: true` rejects, so a bump
+  # can turn a warning into a build failure or a broken reference into a published page. Playwright
+  # ships a different Chromium build per release and only some of them can decode the H.264 in the
+  # committed pitch, which is why `video/package.json` pins it exactly.
+  #
+  # Dependabot is allowed to propose bumps to all of it, including Playwright, and that is safe for
+  # a specific reason rather than by optimism: the `video` job plays the published file in the
+  # browser Playwright installs, so a version that cannot decode it fails CI with a message that
+  # names the symptom. What the pin protects against is a *silent* upgrade, and a reviewed pull
+  # request is not silent.
+  - package-ecosystem: npm
+    directory: /video
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: UTC
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    labels:
+      - dependencies
+    groups:
+      browser:
+        patterns:
+          - playwright
+          - playwright-core
+
+  # `requirements-docs.txt` is matched by the `requirements*.txt` pattern, and it carries a single
+  # exact pin: the Material theme. MkDocs' own `strict` behaviour and the theme's configuration
+  # schema both move between releases, so this is a bump that can fail the build on purpose.
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: UTC
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    labels:
+      - dependencies
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: UTC
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(ci)"
+      include: scope
+    labels:
+      - dependencies
+      - github-actions

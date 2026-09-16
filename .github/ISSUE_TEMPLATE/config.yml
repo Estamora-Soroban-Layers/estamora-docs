@@ -1,0 +1,36 @@
+# Issue-template chooser configuration.
+#
+# Blank issues are disabled on purpose. A report about this site almost always needs the same
+# thing — the page — and a blank issue reliably omits it, which turns the first exchange into a
+# request for information the reporter already had.
+#
+# The routing matters more here than in most repositories. This site does not own most of what it
+# publishes: the `runner/` and `spec/` sections are assembled at build time from pinned revisions
+# of the repositories that do own them, so a defect on one of those pages is usually a defect
+# upstream, and a report filed here cannot be acted on.
+#
+# One exception is worth naming, because it looks like an upstream defect and is not: where a
+# curated page restates a figure that an assembled document owns, the disagreement is a defect in
+# this repository. That is what its `pins` and `video` checks exist to catch, and it is the first
+# option on the bug form below.
+
+blank_issues_enabled: false
+
+contact_links:
+  - name: A contract that fails a profile
+    url: https://github.com/Estamora-Soroban-Layers/estamora-conformance-runner/issues
+    about: >-
+      This site explains how to measure a contract; it does not measure one. A failing
+      result is the runner's subject matter.
+
+  - name: What a requirement means
+    url: https://github.com/Estamora-Soroban-Layers/estamora-conformance-spec/issues
+    about: >-
+      The specification owns profiles, schemas, vectors and their wording. Pages under
+      `spec/` are assembled from it and are not editable here.
+
+  - name: The application
+    url: https://github.com/Estamora-Soroban-Layers/estamora-app/issues
+    about: >-
+      A defect in the web application itself — a view, an audit rule, a live contract read
+      — belongs to the application, even when a page here sends you to it.

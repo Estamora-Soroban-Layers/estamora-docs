@@ -1,0 +1,79 @@
+name: Content request
+description: Propose a guide, a reference page or a worked example that a reader is missing.
+title: "content: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for adding to the curated documentation — the pages this repository
+        writes — rather than for correcting one.
+
+        One rule shapes most of what is acceptable here. **This site does not own the facts it
+        publishes.** Reference material is assembled at build time from pinned revisions of the
+        specification and the runner; the curated pages explain those and link to them. So a
+        proposal has to say what the new page would *add* that the owning repository does not
+        already say, because a page that restates a document it does not own is a copy that goes
+        stale silently — and there is a check in this repository that exists precisely because
+        that has happened.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - A guide for a task a reader cannot currently complete from this site alone
+        - A reference page for behaviour that is documented only in source
+        - A worked example, from a real contract or a real report
+        - Filling a gap in an existing curated page
+        - Reorganising the navigation so something is findable
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: The question a reader cannot answer
+      description: >-
+        Ask it as the reader would ask it, and say what they would have to read instead today.
+        A real attempt — "I followed the installation guide and then could not tell whether X" —
+        is what makes this reviewable.
+    validations:
+      required: true
+
+  - type: input
+    id: owner
+    attributes:
+      label: Which repository owns the fact
+      description: >-
+        The specification, the runner or this site — and if it is one of the first two, the path
+        that owns it. If the answer is "none of them, this would be new", say that plainly; that
+        is a different and larger proposal.
+      placeholder: "estamora-conformance-runner, docs/cli.md"
+    validations:
+      required: true
+
+  - type: textarea
+    id: addition
+    attributes:
+      label: What this page would add that the owning document does not
+      description: >-
+        The explanation, the ordering, the worked example, the thing that is obvious once stated
+        and hard to infer from a reference. If the honest answer is "it would restate the
+        reference more readably", say that, and say why a link would not do.
+    validations:
+      required: true
+
+  - type: textarea
+    id: figures
+    attributes:
+      label: Any figure the page would state, and what would keep it true
+      description: >-
+        Figures in prose go stale and there is no check that reads English. If the page would
+        state a count, a coverage number, a duration or a score, say which artefact owns it and
+        which check would fail when the two disagree — or say that none would, and why that is an
+        acceptable risk for this page.
+    validations:
+      required: true

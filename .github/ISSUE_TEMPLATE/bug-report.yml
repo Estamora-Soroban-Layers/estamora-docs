@@ -1,0 +1,96 @@
+name: Bug report
+description: Report a defect in the site, the assembled pages, the pitch or the checks.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, please establish which of these it is, because the fix belongs in a
+        different repository in each case:
+
+        - **A document under `runner/` or `spec/` is wrong.** Those pages are *assembled at build
+          time* from pinned revisions of the repositories that own them. Editing them here is not
+          possible; the fix is upstream, and this site picks it up when the pin moves.
+        - **A curated page states something wrong, or restates a figure the assembled document
+          owns and disagrees with it.** That is a defect here, and it is the one this repository's
+          checks are built to catch.
+        - **The site is broken as a site** — a nav entry leads nowhere, a page is unreachable, a
+          link has rotted, the pitch downloads instead of playing. Also here.
+
+        The site is built with `strict: true`, so a reference to a page or anchor that does not
+        exist fails the build rather than shipping. If you are seeing it deployed, that detail is
+        worth including.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - A curated page states something that is no longer true
+        - A curated page restates a figure that an assembled document owns, and disagrees with it
+        - An assembled page is out of date with the revision the site pins
+        - A pinned revision no longer resolves, or a newer tag exists and the pin should move
+        - A link is dead, or points somewhere other than where the text says it goes
+        - A navigation entry leads nowhere, or a curated page cannot be reached from the navigation
+        - The pitch downloads instead of playing, or a pitch reference is not playable
+        - The build fails, or strict mode rejects something it should accept
+        - Something else
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: The page
+      description: The deployed URL, or the path in this repository.
+      placeholder: "https://estamora-docs.vercel.app/reference/exit-codes/"
+    validations:
+      required: true
+
+  - type: textarea
+    id: says
+    attributes:
+      label: What it says
+      description: Quote it, and say whether the page is curated here or assembled from a pin.
+    validations:
+      required: true
+
+  - type: textarea
+    id: should
+    attributes:
+      label: What the document that owns the fact says
+      description: >-
+        Give the repository, path and revision. "The runner says otherwise" is not something
+        anybody can act on; a pinned revision and a path is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: checks
+    attributes:
+      label: What the checks say
+      description: >-
+        Four of these need nothing installed beyond PyYAML, so they run in about a second. The
+        build is the one that catches a broken reference before it ships.
+      value: |
+        ```
+        python3 scripts/check-external-links.py
+        python3 scripts/check-nav.py
+        python3 scripts/check-pitch-references.py
+        python3 scripts/check-workflows.py
+        ./scripts/build-site.sh site
+        ```
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: not-security
+    attributes:
+      label: One thing this cannot be
+      options:
+        - label: >-
+            I am not reporting a security guarantee. A conformant contract can still be
+            exploitable, and no page on this site presents conformance as safety.
+          required: true
