@@ -11,3 +11,8 @@ node_modules/
 
 # Playwright's downloaded browsers, if a run puts them somewhere local.
 .cache/
+
+# The virtual environment `CONTRIBUTING.md` tells a contributor to create. It was not ignored,
+# and this repository is documents and checks rather than code, so a `git add -A` after following
+# the guide would have committed an interpreter and a few thousand library files into it.
+.venv/

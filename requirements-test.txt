@@ -1,0 +1,14 @@
+# The dependencies of `tests/`, which exercise the checks in `scripts/`.
+#
+# Kept separate from `requirements-docs.txt` because two different jobs need them: the build
+# renders the site and never imports a test, and the test job needs no site toolchain. Pinning
+# them exactly matches how the documentation toolchain is pinned, and for the same reason — the
+# thing being pinned decides whether a check passes, so a change to it is a change to what this
+# repository asserts.
+#
+# PyYAML is here because one of the checks parses `mkdocs.yml`. It is also installed, on its own,
+# by the navigation job — deliberately, since that job's whole design is to need almost nothing
+# so that a failure in it cannot come from a dependency.
+pytest==9.1.1
+pytest-cov==7.1.0
+PyYAML==6.0.3

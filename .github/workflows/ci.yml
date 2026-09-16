@@ -1,14 +1,23 @@
 name: CI
 
-# Three questions, and each has failed in a real project at least once:
+# One job per question, and each has failed in a real project at least once:
 #
-#   build  -- does the site still assemble and render, with link validation strict?
-#   pins   -- do the revisions this site is assembled from still exist upstream?
-#   links  -- does every URL the curated documentation points at still resolve?
+#   build       -- does the site still assemble and render, with link validation strict?
+#   pins        -- do the revisions this site is assembled from still exist upstream?
+#   video       -- does the pitch play from the site, and are the figures it states still true?
+#   links       -- does every URL the curated documentation points at still resolve?
+#   navigation  -- is every curated page reachable, and does every entry lead somewhere?
+#   pitch       -- is every reference to the pitch playable, rather than a download?
+#   hardening   -- is every job here bounded and least-privileged?
+#   tests       -- are the checks themselves tested, and do they still run as scripts?
 #
 # `pins` runs on a schedule as well as on a change, because the failure it catches is not
 # caused by anything in this repository: a tag can be deleted or a newer release published
 # while this repository is untouched.
+#
+# `tests` is the only job here that tests the checks rather than the site. It lives in this
+# workflow rather than one of its own for the reason the checks share a workflow at all: a
+# check that the thing it protects does not run is a check nobody runs.
 
 on:
   push:
@@ -263,3 +272,47 @@ jobs:
       # pull_request_target -- the one trigger that runs with the base token on a fork's code.
       - name: Every workflow is least-privilege and bounded
         run: python3 scripts/check-workflows.py
+
+  tests:
+    name: The checks are tested
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-test.txt
+
+      - name: Install the test dependencies
+        run: pip install --disable-pip-version-check -r requirements-test.txt
+
+      # The denominator is stated here rather than left to the configuration, because a
+      # coverage figure with an unstated denominator measures whatever the tests happened to
+      # load. The scope is the five Python checks. What is not in it: the shell entry points,
+      # which are not Python; `video/*.py`, which needs piper and ffmpeg and is checked by the
+      # `video` job instead; and the five `sys.exit(main())` lines, which the step below
+      # executes rather than asserts.
+      - name: Test the checks, with the floor enforced
+        run: python3 -m pytest tests --cov=scripts --cov-report=term-missing --cov-fail-under=70
+
+      # An in-process test exercises a check's logic. It does not exercise `__main__`, the exit
+      # code a pipeline reads, or whether the file is executable at all -- so the checks that
+      # need nothing external are also run the way a contributor runs them. That is the only
+      # thing that executes `sys.exit(main())`.
+      #
+      # `check-external-links.py` is left out because the `links` job already fetches every URL
+      # it names, and running it twice would double the requests to other people's hosts.
+      # `check-deployed-links.py` is left out because it asserts against a deployment, and there
+      # is not one yet: it runs in `deploy-vercel.yml`, after the thing it checks exists.
+      - name: Run the checks as scripts, which is how they are actually used
+        run: |
+          set -euo pipefail
+          for check in scripts/check-nav.py scripts/check-pitch-references.py scripts/check-workflows.py; do
+            echo "--- $check"
+            python3 "$check"
+          done

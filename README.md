@@ -138,7 +138,7 @@ nothing *updated*, because the site is where the documentation is read.
 
 ## Checks
 
-Eight job-level checks. Each fails for a different reason, so a red build names the problem.
+Nine job-level checks. Each fails for a different reason, so a red build names the problem.
 
 | Workflow | What it enforces |
 | --- | --- |
@@ -149,11 +149,36 @@ Eight job-level checks. Each fails for a different reason, so a red build names 
 | `ci.yml` → navigation | Every curated document is reachable from the navigation, and every non-assembled nav target exists on disk. |
 | `ci.yml` → pitch | Every reference to the pitch keeps it **playable**: a playback link points at this site, the archival link uses an immutable tag, and the player declares its MIME type. A release asset is served `content-disposition: attachment`, so a link to one downloads 15 MB instead of playing it — a defect that shipped once, because every header check passed. |
 | `ci.yml` → hardening | Every workflow job declares a timeout and explicit permissions, and no workflow uses `pull_request_target`. |
+| `ci.yml` → tests | The checks themselves are tested, with a coverage floor, and the ones that need nothing external still run **as scripts** — which is the only thing that executes their `__main__` blocks. |
 | `deploy-vercel.yml` | A push to `main` publishes the artefact CI built, then asserts the published URLs, including the video as `video/mp4` with byte-range support. |
 
 The four checks that need nothing installed — `links`, `navigation`, `pitch`, `hardening` — run
 without a dependency setup beyond PyYAML, because a check that runs in a second is one that cannot
 fail for an unrelated reason.
+
+## Test coverage
+
+Measured with `python3 -m pytest tests --cov=scripts`, with the floor enforced in CI:
+
+| Metric     | Measured | Floor enforced |
+| ---------- | -------- | -------------- |
+| Statements | 98.3%    | 70%            |
+
+The denominator matters more than the figure, so it is stated here rather than left to a config
+file. The scope is `scripts/*.py`: the five checks that this repository runs against itself, which
+is the code a contributor can actually break. What is **not** in the figure:
+
+| Path                 | In the figure | Why                                                                                          |
+| -------------------- | ------------- | -------------------------------------------------------------------------------------------- |
+| `scripts/*.sh`       | no            | Entry points. They are shell, and the job above runs them rather than measuring them.         |
+| `video/*.py`         | no            | The narration and composition pipeline needs piper and ffmpeg, and is what the `video` job verifies instead: it plays the published file and re-checks every figure the narration states. |
+| `sys.exit(main())`   | no            | The five lines an in-process test cannot reach — which is why the checks are also run as scripts. |
+
+Writing these tests found a defect in one of the checks, which is the argument for having them.
+`check-deployed-links.py` claimed in its docstring to resolve a page's player and poster, and its
+pattern only read `src` and `href` — so the landing page's poster, the one attribute naming an
+image this repository has to publish, was never asserted. A poster that resolves to nothing renders
+as an empty box, which reads as a styling problem rather than as a missing file.
 
 ## Contributing
 

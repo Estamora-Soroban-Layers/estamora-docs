@@ -26,8 +26,9 @@ resolves to a path that does not exist. MkDocs validates *internal page links* a
 `strict: true` fails the build on a broken one -- but a relative reference in raw HTML, which is
 how the landing page embeds its video, is not a Markdown link and is not validated.
 
-So this resolves what a browser would resolve. It takes every relative `src` and `href` in every
-built page, resolves it against that page's own deployed URL, and asserts the result is served.
+So this resolves what a browser would resolve. It takes every relative `src`, `href` and `poster`
+in every built page, resolves it against that page's own deployed URL, and asserts the result is
+served.
 The URL list is derived, so it cannot go stale, and it cannot be empty without this check failing.
 
 # What it does not do
@@ -49,7 +50,17 @@ import urllib.parse
 import urllib.request
 
 # The attribute syntax a browser's parser accepts for an embedded reference.
-REFERENCE = re.compile(r"""(?:src|href)\s*=\s*["']([^"']+)["']""")
+#
+# `poster` is here because the landing page's player declares one, and a poster that resolves to
+# nothing renders as an empty box -- which is exactly the "looks like a styling problem" failure
+# this check exists to catch. It was missing, so the check read every reference on the page except
+# the one attribute that names an image this repository has to publish.
+#
+# The lookbehind keeps `data-src` and `data-poster` out, and it has to be a lookbehind rather than
+# a `\b`: a hyphen is a word boundary, so `\b(?:src|...)` still matches inside `data-src` -- the
+# boundary is between the `-` and the `s`. `srcset` needs no guard, since `\s*=` cannot follow the
+# first three characters of it.
+REFERENCE = re.compile(r"""(?<![\w-])(?:src|href|poster)\s*=\s*["']([^"']+)["']""")
 
 # Schemes and fragment-only references that are not requests to this host.
 NOT_A_REFERENCE = ("http://", "https://", "//", "#", "mailto:", "data:", "javascript:", "tel:")
