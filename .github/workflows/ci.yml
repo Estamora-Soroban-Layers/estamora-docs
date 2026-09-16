@@ -154,6 +154,49 @@ jobs:
           report estamora-conformance-runner "${ESTAMORA_RUNNER_TAG}"
           report estamora-conformance-spec "${ESTAMORA_SPEC_TAG}"
 
+  video:
+    name: The pitch plays and its figures are still true
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.x
+          cache: npm
+          cache-dependency-path: video/package-lock.json
+
+      - name: Install the capture toolchain
+        run: npm ci --prefix video
+
+      # The browser is a separate download, and it is pinned by the Playwright version rather
+      # than by this workflow: a Chromium that cannot decode H.264 reports a broken player for a
+      # reason that has nothing to do with the video. See `video/README.md`.
+      - name: Install the browser the capture pipeline needs
+        run: npm --prefix video run install-browser
+
+      # Two questions, and the second is the one nothing else in the organization asks.
+      #
+      # Does the published file play in a browser, as opposed to being served? `deploy-vercel.yml`
+      # asserts the content type and the byte ranges, which is what a browser needs. This asks
+      # the browser what happened, because a response can satisfy every header and still leave the
+      # element with no metadata.
+      #
+      # And is every figure the narration states still true? Nothing breaks when the project moves
+      # on: the file plays, the links resolve, and the voice states a number that is now wrong.
+      # This reads each figure out of the artefact that owns it -- the committed report, the
+      # organization's repository list -- and fails when they disagree.
+      #
+      # It checks the *deployed* sites rather than a local build, deliberately: the video the
+      # reader watches is the deployed one, and that is the artefact whose accuracy is in question.
+      # A consequence worth stating: this job failing can mean the deployment is down rather than
+      # that this repository is wrong, and the message says which.
+      - name: Verify the pitch
+        run: node video/verify.mjs
+
   links:
     name: Check external links
     runs-on: ubuntu-latest
