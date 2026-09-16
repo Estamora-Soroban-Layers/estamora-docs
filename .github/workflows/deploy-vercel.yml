@@ -5,12 +5,25 @@ name: Deploy to Vercel
 # The alternative -- letting Vercel build the site from the repository -- would mean the
 # published artefact comes from a second build, on a different machine, with a Python and an
 # MkDocs version Vercel chose rather than one this repository pins. The site is assembled from
-# tagged revisions of two other repositories, so a build that is not the one CI validated is a
-# build nobody checked.
+# tagged revisions of two other repositories and fetches its pitch video from a release, so a
+# build that is not the one CI validated is a build nobody checked.
 #
 # So this workflow builds the site the same way `ci.yml` does, and then publishes that exact
 # directory. Vercel's own build step (`scripts/assert-built.sh`) asserts the artefact exists
 # instead of producing it.
+#
+# # The order of the assertions at the end
+#
+# `vercel deploy` returning is not the same as the alias serving what was just deployed: the
+# edge takes a moment to switch, and during that moment the production URL still answers with
+# the *previous* deployment. The first version of this workflow asserted the pitch against the
+# alias immediately and failed on a deployment that was correct -- it had read the old
+# deployment's not-found page, whose content type is `text/html`.
+#
+# So the pitch step runs first, and it is the step that waits: it checks the immutable
+# deployment URL (immediately consistent, because it is the artefact this job built) and then
+# waits, in bounded steps, for the alias to catch up. Every check after it is a check of the
+# alias, and can therefore rely on the alias having moved.
 
 on:
   push:
@@ -38,7 +51,7 @@ jobs:
   deploy:
     name: Build and publish
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     environment:
       name: production
       url: https://estamora-docs.vercel.app
@@ -98,6 +111,60 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
+      - name: The pitch plays, rather than downloading
+        # The landing page embeds a player, and `200` would not mean the player works. Two
+        # things have to be true of the response for a browser to play and seek it: a media
+        # content type, and byte-range support. A `.mp4` served as octet-stream with
+        # `content-disposition: attachment` -- which is what a GitHub release asset is --
+        # downloads instead of playing, and a link checker would call that a working link.
+        #
+        # The content type is the *host's* decision rather than the file's, so this is asserted
+        # against the deployed origin and not against the build output. This is also the step
+        # that waits for the alias, so that the checks below can rely on it having moved.
+        run: |
+          set -euo pipefail
+
+          deployment="${{ steps.deploy.outputs.url }}"
+          alias="https://estamora-docs.vercel.app"
+          video="/assets/estamora-pitch.mp4"
+
+          check_playable() {
+            local url="$1"
+            local headers type ranges code
+            headers="$(curl -s -D - -o /dev/null -m 60 "$url" | tr -d '\r')"
+            type="$(printf '%s\n' "$headers" | awk 'tolower($1) == "content-type:" {print $2}')"
+            ranges="$(printf '%s\n' "$headers" | awk 'tolower($1) == "accept-ranges:" {print $2}')"
+            printf '  content-type=%s  accept-ranges=%s\n' "$type" "$ranges"
+            case "$type" in
+              video/mp4*) ;;
+              *) echo "::error::$url is served as '$type'; a browser will download it instead of playing it"; return 1 ;;
+            esac
+            [ "$ranges" = "bytes" ] || { echo "::error::$url does not accept byte ranges, so the player cannot seek"; return 1; }
+            code="$(curl -s -o /dev/null -w '%{http_code}' -m 60 -r 0-1023 "$url")"
+            printf '  range request -> %s\n' "$code"
+            [ "$code" = "206" ] || { echo "::error::a byte-range request to $url returned $code, not 206"; return 1; }
+          }
+
+          echo "the deployment this job published:"
+          check_playable "$deployment$video"
+
+          echo "the production alias, once the edge has switched to it:"
+          for attempt in 1 2 3 4 5 6 7 8; do
+            if check_playable "$alias$video"; then
+              echo "::notice::the production alias serves the pitch (attempt $attempt)"
+              break
+            fi
+            if [ "$attempt" = "8" ]; then
+              echo "::error::the production alias still does not serve playable video after 8 attempts"
+              exit 1
+            fi
+            sleep 15
+          done
+
+          code="$(curl -s -o /dev/null -w '%{http_code}' -m 30 "$alias/assets/pitch-thumbnail.png")"
+          echo "poster -> $code"
+          [ "$code" = "200" ] || { echo "::error::the player's poster returned $code"; exit 1; }
+
       - name: The deployed site serves the pages it should
         # Deployed is not the same as serving. This asserts the alias resolves and answers,
         # rather than trusting the CLI's exit code for the definition of success.
@@ -109,34 +176,16 @@ jobs:
             [ "$code" = "200" ] || { echo "::error::$path returned $code"; exit 1; }
           done
 
-      - name: The deployed pitch video plays, rather than downloads
-        # The landing page embeds a player, and `200` would not mean the player works. Two
-        # things have to be true of the response for a browser to play and seek it: a media
-        # content type, and byte-range support. A `.mp4` served as octet-stream with
-        # `content-disposition: attachment` -- which is what a GitHub release asset is --
-        # downloads instead of playing, and a link checker would call that a working link.
+      - name: Every URL the site's own pages reference is served
+        # The CI link checker skips this site's own host on purpose: it runs in a job that
+        # cannot see the deployment, so a URL naming an artefact the deploy publishes could only
+        # race it. That is not hypothetical -- the first version of this check ran in CI, found
+        # the pitch in the README before the deployment carrying it had published, and reported
+        # a 404 for a file that was served correctly seconds later.
         #
-        # This is asserted against the deployed origin rather than the build output because
-        # the content type is the *host's* decision, not the file's.
-        run: |
-          set -euo pipefail
-          url="https://estamora-docs.vercel.app/assets/estamora-pitch.mp4"
-
-          headers="$(curl -s -D - -o /dev/null -m 60 "$url" | tr -d '\r')"
-          type="$(printf '%s\n' "$headers" | grep -i '^content-type:' | awk '{print $2}' | tr -d '\r')"
-          ranges="$(printf '%s\n' "$headers" | grep -i '^accept-ranges:' | awk '{print $2}' | tr -d '\r')"
-          echo "content-type: $type"
-          echo "accept-ranges: $ranges"
-          case "$type" in
-            video/mp4*) ;;
-            *) echo "::error::$url is served as '$type'; a browser will download it instead of playing it"; exit 1 ;;
-          esac
-          [ "$ranges" = "bytes" ] || { echo "::error::$url does not accept byte ranges, so the player cannot seek"; exit 1; }
-
-          code="$(curl -s -o /dev/null -w '%{http_code}' -m 60 -r 0-1023 "$url")"
-          echo "range request -> $code"
-          [ "$code" = "206" ] || { echo "::error::a byte-range request returned $code, not 206"; exit 1; }
-
-          code="$(curl -s -o /dev/null -w '%{http_code}' -m 30 "https://estamora-docs.vercel.app/assets/pitch-thumbnail.png")"
-          echo "poster -> $code"
-          [ "$code" = "200" ] || { echo "::error::the player's poster returned $code"; exit 1; }
+        # This is where those URLs can be checked honestly. They are derived from the built
+        # pages -- every relative `src` and `href` resolved the way a browser resolves it, plus
+        # this repository's own absolute self-references -- so the list cannot go stale, and it
+        # covers the failure MkDocs' build-time link validation cannot see: a relative reference
+        # inside raw HTML, which is how the landing page embeds its player.
+        run: python3 scripts/check-deployed-links.py --site site
