@@ -1,6 +1,9 @@
 # The pitch video, and how it is made
 
-**Watch it: <https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4>**
+**Watch it: <https://estamora-docs.vercel.app/assets/estamora-pitch.mp4>** (or the
+[archived release copy](https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4),
+which downloads rather than plays — release assets are served as
+`application/octet-stream` with `content-disposition: attachment`).
 — 5:14, 1920×1080.
 
 The pipeline that produces it is committed here, which is the point. A pitch video is

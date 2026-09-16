@@ -6,7 +6,7 @@ verdict means.**
 
 [![CI](https://github.com/Estamora-Soroban-Layers/estamora-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/Estamora-Soroban-Layers/estamora-docs/actions/workflows/ci.yml)
 [![Deployed on Vercel](https://img.shields.io/badge/vercel-estamora--docs.vercel.app-black?logo=vercel)](https://estamora-docs.vercel.app)
-[![Product pitch](https://img.shields.io/badge/watch-5--minute%20pitch-blueviolet)](https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4)
+[![Product pitch](https://img.shields.io/badge/watch-5--minute%20pitch-blueviolet)](https://estamora-docs.vercel.app/assets/estamora-pitch.mp4)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 **Read it: <https://estamora-docs.vercel.app>**
@@ -15,15 +15,22 @@ verdict means.**
 
 ## Watch the pitch
 
-<a href="https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4">
+<a href="https://estamora-docs.vercel.app/assets/estamora-pitch.mp4">
   <img src="docs/assets/pitch-thumbnail.png" alt="Watch the five-minute Estamora product pitch" width="720">
 </a>
 
-**[Five minutes, 1920×1080, no sign-in.](https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4)**
+**[Five minutes, 1920×1080, no sign-in.](https://estamora-docs.vercel.app/assets/estamora-pitch.mp4)**
 Every frame is a live deployment or output a program actually produced — the captured terminal
 transcripts come from the release binary, and the application screenshots come from the
 deployed site. The pipeline that builds it is committed in [`video/`](video/), so the video can
 be regenerated rather than decaying into an artefact nobody can correct.
+
+The link above points at the published site, which serves the file as `video/mp4` with byte
+ranges so the browser plays it in place. It deliberately does **not** point at the release
+asset: GitHub serves those as `application/octet-stream` with
+`content-disposition: attachment`, so the same bytes become a 15 MB download instead of a
+video. The [immutable release copy](https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4)
+is there as an archival download.
 
 ## What this repository is, and what it deliberately is not
 
