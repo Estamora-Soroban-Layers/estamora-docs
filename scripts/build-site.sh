@@ -30,6 +30,12 @@ python3 -c "import mkdocs" 2>/dev/null \
 
 ./scripts/assemble-docs.sh "$ASSEMBLED"
 
+# The pitch video is fetched, not committed, and it has to be beside the pages before MkDocs
+# renders: MkDocs copies the non-Markdown files in `docs_dir` into the site, so fetching it
+# afterwards would leave it out of the published artefact. `fetch-pitch-video.sh` explains why
+# the site serves its own copy rather than linking the release asset.
+./scripts/fetch-pitch-video.sh "$ASSEMBLED/assets"
+
 say "build-site: rendering into $OUT"
 ESTAMORA_DOCS_DIR="$ASSEMBLED" mkdocs build --site-dir "$OUT"
 
@@ -37,6 +43,13 @@ pages="$(find "$OUT" -name '*.html' | wc -l | tr -d ' ')"
 # Asserted, because the failure this script exists to prevent is a site that builds
 # successfully while missing its content.
 [ "$pages" -gt 30 ] || die "expected more than 30 pages, found $pages"
+
+# The video is the one asset whose absence would not fail the build: the site renders fine
+# with a player pointing at nothing. Asserted here because the page is the first thing on the
+# landing page, and a broken player is worse than no player.
+if [ ! -s "$OUT/assets/estamora-pitch.mp4" ]; then
+    die "the site has no pitch video at $OUT/assets/estamora-pitch.mp4"
+fi
 
 if [ -n "${GITHUB_SHA:-}" ]; then
     printf '%s\n' "$GITHUB_SHA" > "$OUT/REVISION"
