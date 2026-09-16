@@ -17,6 +17,20 @@ those as failures would make this check flaky, and a flaky check is one people l
 ignore -- so they are reported as "unknown" and do not fail the run. A 404 or 410 is
 unambiguous and does fail.
 
+# Why this site's own host is not checked here
+
+A URL on this documentation site is *this repository's own output*, and this check runs in a
+job that cannot see the deployment. When a page links to a file the deploy publishes, checking
+that URL from CI checks it against whatever was live a moment ago: the page said
+`/assets/estamora-pitch.mp4` before the deployment carrying that file existed, so the check
+reported a 404 for a file that was published correctly moments later. It is a race that this
+repository would lose intermittently and blame on the wrong commit.
+
+Those URLs are asserted where they can be asserted honestly -- in `deploy-vercel.yml`, against
+the published site: the pages, and the pitch's content type, byte-range support and
+`206` response. They are reported here as `own` rather than silently skipped, so that the
+count is visible and the decision is legible.
+
     python3 scripts/check-external-links.py [--json]
 """
 
@@ -41,6 +55,10 @@ TRAILING = ".,;:!?"
 # the reason is stated rather than the check being silently narrowed.
 SKIP_HOSTS = ("localhost", "127.0.0.1")
 ALLOWED_UNKNOWN = {403, 405, 429, 999}
+
+# This site's own host. See the module docstring: those URLs are checked by the deploy
+# workflow against the deployment, because only there does the thing they name exist.
+OWN_HOST = "estamora-docs.vercel.app"
 
 TIMEOUT = 20
 AGENT = "estamora-docs-link-check (+https://github.com/Estamora-Soroban-Layers/estamora-docs)"
@@ -105,7 +123,8 @@ def reachable(url: str) -> tuple[str, int | str]:
 def main() -> int:
     as_json = "--json" in sys.argv
     targets = urls()
-    results = {url: reachable(url) for url in sorted(targets)}
+    own = {url for url in targets if OWN_HOST in url}
+    results = {url: reachable(url) for url in sorted(targets) if url not in own}
 
     broken = {url: detail for url, (state, detail) in results.items() if state == "broken"}
     unknown = {url: detail for url, (state, detail) in results.items() if state == "unknown"}
@@ -115,6 +134,7 @@ def main() -> int:
             json.dumps(
                 {
                     "checked": len(results),
+                    "own_host": {u: sorted(targets[u]) for u in sorted(own)},
                     "broken": {u: {"detail": d, "in": sorted(targets[u])} for u, d in broken.items()},
                     "unknown": {u: d for u, d in unknown.items()},
                 },
@@ -122,10 +142,16 @@ def main() -> int:
             )
         )
     else:
+        for url in sorted(own):
+            where = ", ".join(sorted(targets[url]))
+            print(f"own        -  {url}  (asserted after deploy, in {where})")
         for url, (state, detail) in results.items():
             marker = {"ok": "ok     ", "broken": "BROKEN ", "unknown": "unknown"}[state]
             print(f"{marker} {detail!s:>8}  {url}")
-        print(f"\nlink-check: {len(results)} URL(s), {len(broken)} broken, {len(unknown)} unknown")
+        print(
+            f"\nlink-check: {len(results)} URL(s), {len(broken)} broken, "
+            f"{len(unknown)} unknown, {len(own)} on this site's own host"
+        )
 
     if broken:
         for url, detail in sorted(broken.items()):
