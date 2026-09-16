@@ -70,6 +70,7 @@ node video/verify.mjs           # does it play, and is what it says still true?
 | `tts.py` | Neural narration via piper, one file per scene, offline |
 | `compose.py` | ffmpeg: captions, fades, encode, and assertions on the result |
 | `verify.mjs` | The published file plays in a browser, and every figure the narration states still matches the artefact that owns it |
+| `capture-readme-shots.mjs` | The stills the four READMEs embed, captured from the deployed sites |
 
 ## Two decisions worth knowing
 

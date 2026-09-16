@@ -32,6 +32,15 @@ asset: GitHub serves those as `application/octet-stream` with
 video. The [immutable release copy](https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4)
 is there as an archival download.
 
+## What the site looks like
+
+![The documentation site landing page](docs/assets/screenshots/docs-landing.png)
+
+Captured from [estamora-docs.vercel.app](https://estamora-docs.vercel.app) by
+[`video/capture-readme-shots.mjs`](video/capture-readme-shots.mjs), so it shows the deployed site
+rather than a local MkDocs preview. The landing page is where the pitch player, the pinned
+document sets and the reference converge.
+
 ## What this repository is, and what it deliberately is not
 
 It is the reader's documentation: installation, a first measurement, CI integration, and the
