@@ -210,3 +210,56 @@ jobs:
       # to hosts that are already asserted to serve the normative trees.
       - name: Every external URL in the curated documentation resolves
         run: python3 scripts/check-external-links.py
+
+  # The three checks below assert properties of this repository rather than of the site. Each is
+  # a separate job because each fails for a different reason, and a failure should name which.
+  # None of them installs anything: they are searches and parses, and a check that runs in a
+  # second is one that cannot fail for an unrelated reason.
+  navigation:
+    name: Navigation integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install PyYAML, which is all this needs
+        run: python3 -m pip install --quiet 'pyyaml>=6'
+
+      # A curated page that is built but not navigable is a page nobody reads, and a nav entry
+      # naming a file that is not there publishes a dead link.
+      - name: Every curated document is navigable and every target exists
+        run: python3 scripts/check-nav.py
+
+  pitch:
+    name: The pitch stays playable
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      # A GitHub release asset is served as application/octet-stream with
+      # content-disposition: attachment, so a link to one *downloads* 15 MB instead of playing
+      # it. Every header check passes and the reader gets a file rather than a video. Serving
+      # the same bytes from this site as video/mp4 is the fix; this keeps it fixed.
+      - name: Every reference to the pitch keeps it playable
+        run: python3 scripts/check-pitch-references.py
+
+  hardening:
+    name: Workflow hardening
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7
+
+      # Every job declares a timeout and explicit permissions, and no workflow uses
+      # pull_request_target -- the one trigger that runs with the base token on a fork's code.
+      - name: Every workflow is least-privilege and bounded
+        run: python3 scripts/check-workflows.py

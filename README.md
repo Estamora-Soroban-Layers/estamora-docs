@@ -126,12 +126,22 @@ nothing *updated*, because the site is where the documentation is read.
 
 ## Checks
 
+Eight job-level checks. Each fails for a different reason, so a red build names the problem.
+
 | Workflow | What it enforces |
 | --- | --- |
 | `ci.yml` → build | The site assembles and renders with `strict: true`, and contains the pages it should. |
 | `ci.yml` → pins | The pinned revisions still resolve upstream, and reports when a newer tag exists. |
+| `ci.yml` → video | The pitch plays from the site, and the figures its narration states are still true of the artefacts that own them. |
 | `ci.yml` → links | Every external URL in the curated documentation resolves. |
-| `deploy-vercel.yml` | A push to `main` publishes the artefact CI built. |
+| `ci.yml` → navigation | Every curated document is reachable from the navigation, and every non-assembled nav target exists on disk. |
+| `ci.yml` → pitch | Every reference to the pitch keeps it **playable**: a playback link points at this site, the archival link uses an immutable tag, and the player declares its MIME type. A release asset is served `content-disposition: attachment`, so a link to one downloads 15 MB instead of playing it — a defect that shipped once, because every header check passed. |
+| `ci.yml` → hardening | Every workflow job declares a timeout and explicit permissions, and no workflow uses `pull_request_target`. |
+| `deploy-vercel.yml` | A push to `main` publishes the artefact CI built, then asserts the published URLs, including the video as `video/mp4` with byte-range support. |
+
+The four checks that need nothing installed — `links`, `navigation`, `pitch`, `hardening` — run
+without a dependency setup beyond PyYAML, because a check that runs in a second is one that cannot
+fail for an unrelated reason.
 
 ## Contributing
 
