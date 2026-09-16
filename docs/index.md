@@ -1,17 +1,21 @@
 # Estamora documentation
 
 **This is the reader's documentation for Estamora: what it is for, how to run it against a
-contract, and how to tell what a verdict means.** Start at
-[Installation](getting-started/installation.md), then
+contract, and how to tell what a verdict means.** Watch the five-minute pitch below, then
+start at [Installation](getting-started/installation.md) and
 [Your first measurement](getting-started/first-measurement.md).
 
-<a href="https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4">
-  <img src="assets/pitch-thumbnail.png" alt="Watch the five-minute Estamora product pitch" width="100%">
-</a>
+<video controls preload="metadata" playsinline poster="assets/pitch-thumbnail.png" width="100%">
+  <source src="assets/estamora-pitch.mp4" type="video/mp4">
+  <a href="assets/estamora-pitch.mp4">Download the five-minute pitch</a> (MP4, 15 MB).
+</video>
 
-**▶ [Watch the five-minute product pitch](https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4)**
-— every frame of it is a live deployment or real program output, and the pipeline that made it
-is in [`video/`](https://github.com/Estamora-Soroban-Layers/estamora-docs/tree/main/video).
+**Five minutes**, and every frame of it is a live deployment or real program output: the
+release binary failing a fixture, the deployed applications, and the report the runner
+produced over testnet RPC. The pipeline that made it is in
+[`video/`](https://github.com/Estamora-Soroban-Layers/estamora-docs/tree/main/video), and a
+permanent [archived copy](https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4)
+is attached to the `pitch-v1` release.
 
 <div class="grid cards" markdown>
 
