@@ -30,6 +30,9 @@ env:
   # build script cannot disagree about what was pinned.
   ESTAMORA_RUNNER_TAG: v0.1.3
   ESTAMORA_SPEC_TAG: v0.1.1
+  # The release the pitch video is fetched from. Pinned for the same reason the documents are:
+  # a video that can change under a published URL without a commit here is one nobody can cite.
+  ESTAMORA_PITCH_TAG: pitch-v1
 
 jobs:
   build:
@@ -73,6 +76,24 @@ jobs:
           echo "total: $total page(s)"
           [ "$total" -gt 30 ] || { echo "::error::only $total pages"; exit 1; }
 
+      # The video is the one asset whose absence would not fail the render: the landing page
+      # builds fine with a player pointing at nothing. The build script asserts it too; it is
+      # repeated here because this is the artefact the deploy job publishes.
+      - name: The artefact carries the pitch video
+        run: |
+          set -euo pipefail
+          video="site/assets/estamora-pitch.mp4"
+          [ -s "$video" ] || { echo "::error::$video is missing or empty"; exit 1; }
+          bytes="$(stat -c%s "$video")"
+          [ "$bytes" -ge 1000000 ] || { echo "::error::$video is only $bytes bytes"; exit 1; }
+          printf '%s: %s bytes\n' "$video" "$bytes"
+          python3 -c "
+          import sys
+          header = open('$video','rb').read(12)
+          if header[4:8] != b'ftyp':
+              print('::error::the pitch is not an MP4', file=sys.stderr); sys.exit(1)
+          "
+
       - name: Upload the built site
         uses: actions/upload-artifact@v4
         with:
@@ -104,6 +125,16 @@ jobs:
           }
           check estamora-conformance-runner "${ESTAMORA_RUNNER_TAG}"
           check estamora-conformance-spec "${ESTAMORA_SPEC_TAG}"
+          # The pitch tag is on this repository, so the clone URL is this repository's. A
+          # deleted or renamed release turns the build into a confusing download failure;
+          # checking it directly says which pin is wrong.
+          if git ls-remote --tags --exit-code \
+              "https://github.com/Estamora-Soroban-Layers/estamora-docs" "refs/tags/${ESTAMORA_PITCH_TAG}" >/dev/null 2>&1; then
+            echo "::notice::estamora-docs@${ESTAMORA_PITCH_TAG} resolves"
+          else
+            echo "::error::the pitch release tag ${ESTAMORA_PITCH_TAG} does not exist; the site would publish without its video"
+            exit 1
+          fi
 
       # Not a failure: the point is that drift is *reported* on a schedule rather than
       # discovered as a surprise. This repository's content is pinned on purpose.

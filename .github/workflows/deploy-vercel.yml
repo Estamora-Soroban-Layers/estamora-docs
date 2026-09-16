@@ -27,6 +27,7 @@ concurrency:
 env:
   ESTAMORA_RUNNER_TAG: v0.1.3
   ESTAMORA_SPEC_TAG: v0.1.1
+  ESTAMORA_PITCH_TAG: pitch-v1
   # The Vercel project is identified by these two rather than by a committed `.vercel/`
   # directory, so nothing about the link lives in the repository and rotating the project is
   # a settings change rather than a commit.
@@ -107,3 +108,35 @@ jobs:
             echo "$path -> $code"
             [ "$code" = "200" ] || { echo "::error::$path returned $code"; exit 1; }
           done
+
+      - name: The deployed pitch video plays, rather than downloads
+        # The landing page embeds a player, and `200` would not mean the player works. Two
+        # things have to be true of the response for a browser to play and seek it: a media
+        # content type, and byte-range support. A `.mp4` served as octet-stream with
+        # `content-disposition: attachment` -- which is what a GitHub release asset is --
+        # downloads instead of playing, and a link checker would call that a working link.
+        #
+        # This is asserted against the deployed origin rather than the build output because
+        # the content type is the *host's* decision, not the file's.
+        run: |
+          set -euo pipefail
+          url="https://estamora-docs.vercel.app/assets/estamora-pitch.mp4"
+
+          headers="$(curl -s -D - -o /dev/null -m 60 "$url" | tr -d '\r')"
+          type="$(printf '%s\n' "$headers" | grep -i '^content-type:' | awk '{print $2}' | tr -d '\r')"
+          ranges="$(printf '%s\n' "$headers" | grep -i '^accept-ranges:' | awk '{print $2}' | tr -d '\r')"
+          echo "content-type: $type"
+          echo "accept-ranges: $ranges"
+          case "$type" in
+            video/mp4*) ;;
+            *) echo "::error::$url is served as '$type'; a browser will download it instead of playing it"; exit 1 ;;
+          esac
+          [ "$ranges" = "bytes" ] || { echo "::error::$url does not accept byte ranges, so the player cannot seek"; exit 1; }
+
+          code="$(curl -s -o /dev/null -w '%{http_code}' -m 60 -r 0-1023 "$url")"
+          echo "range request -> $code"
+          [ "$code" = "206" ] || { echo "::error::a byte-range request returned $code, not 206"; exit 1; }
+
+          code="$(curl -s -o /dev/null -w '%{http_code}' -m 30 "https://estamora-docs.vercel.app/assets/pitch-thumbnail.png")"
+          echo "poster -> $code"
+          [ "$code" = "200" ] || { echo "::error::the player's poster returned $code"; exit 1; }
