@@ -5,7 +5,9 @@ behavioural conformance is for, how to measure a Soroban contract, and how to te
 verdict means.**
 
 [![CI](https://github.com/Estamora-Soroban-Layers/estamora-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/Estamora-Soroban-Layers/estamora-docs/actions/workflows/ci.yml)
+[![Specification](https://img.shields.io/badge/spec-estamora--spec-blue)](https://estamora-soroban-layers.github.io/estamora-conformance-spec/)
 [![Deployed on Vercel](https://img.shields.io/badge/vercel-estamora--docs.vercel.app-black?logo=vercel)](https://estamora-docs.vercel.app)
+[![Application](https://img.shields.io/badge/app-estamora--app.vercel.app-black?logo=vercel)](https://estamora-app.vercel.app)
 [![Product pitch](https://img.shields.io/badge/watch-5--minute%20pitch-blueviolet)](https://estamora-docs.vercel.app/assets/estamora-pitch.mp4)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
