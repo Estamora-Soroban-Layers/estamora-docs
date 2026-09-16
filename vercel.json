@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "bash scripts/assert-built.sh",
+  "outputDirectory": "site",
+  "installCommand": "echo 'no dependencies: the site is built by GitHub Actions, not by Vercel'"
+}

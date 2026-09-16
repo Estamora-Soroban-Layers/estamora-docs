@@ -1,0 +1,160 @@
+# The configuration for the Estamora documentation site.
+#
+# This site is the *reader's* documentation: it explains how to use Estamora. It is
+# deliberately not a second copy of the normative specification.
+#
+# The normative documents -- the profiles, the JSON Schemas and the vectors -- have a
+# canonical home at https://estamora-soroban-layers.github.io/estamora-conformance-spec/,
+# which is where every schema `$id` resolves. Reproducing them here would mean a normative
+# document existing in two places that can disagree, which is the exact class of defect the
+# specification repository's own validation exists to prevent.
+#
+# `docs_dir` is overridden by the build because the documents that are not curated here are
+# assembled at build time from pinned revisions of the two source repositories, rather than
+# copied into this one. `scripts/assemble-docs.sh` explains why, and
+# `scripts/build-site.sh` is the single entry point CI and a contributor both use.
+#
+# The navigation below enumerates every page, including the assembled ones. That is what
+# makes the pin meaningful: the page set is fixed by the tags, so a document cannot appear on
+# the published site without a commit here that names it.
+
+site_name: Estamora documentation
+site_description: >-
+  How to measure a Soroban contract's behavioural conformance with Estamora:
+  installation, your first measurement, CI integration, reproducing a verdict, and the
+  reference for the command line, exit codes, error classes and report format.
+site_url: https://estamora-docs.vercel.app
+
+repo_url: https://github.com/Estamora-Soroban-Layers/estamora-docs
+repo_name: Estamora-Soroban-Layers/estamora-docs
+edit_uri: edit/main/docs/
+
+docs_dir: !ENV [ESTAMORA_DOCS_DIR, docs]
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.action.edit
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  # `md_in_html` is not optional here: the grid cards on the landing page are an HTML block
+  # with Markdown inside it, and without this extension they render as literal text.
+  - md_in_html
+  - attr_list
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        # Several diagrams here are mermaid. Rendering them as code blocks would publish a
+        # picture of a diagram to the site whose purpose is to explain the model.
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+
+# `strict: true` below promotes warnings to build failures, which is the point: a broken
+# internal link should stop the deploy rather than be published. The settings here are
+# narrowed to exactly the checks that are meaningful for a site assembled from two other
+# repositories -- the assembled documents link out to absolute URLs by construction, and
+# checking whether a third-party page exists is not this build's job.
+validation:
+  nav:
+    omitted_files: ignore
+  links:
+    not_found: warn
+    absolute_links: ignore
+    unrecognized_links: ignore
+    anchors: ignore
+
+strict: true
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Estamora-Soroban-Layers
+      name: Estamora Soroban Layers on GitHub
+
+copyright: >-
+  Apache-2.0. A conformant verdict means a contract behaved as a named profile requires
+  over a named corpus — and nothing more.
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installation: getting-started/installation.md
+      - Your first measurement: getting-started/first-measurement.md
+  - Concepts:
+      - The layers, and who owns what: concepts/the-layers.md
+  - Reference:
+      - Exit codes: reference/exit-codes.md
+      - Error classes: reference/error-classes.md
+      - Report format: reference/report-format.md
+  - Runner guide:
+      - Command line: runner/cli.md
+      - CI integration: runner/ci-integration.md
+      - Certification: runner/certification.md
+      - Architecture: runner/architecture.md
+      - Execution engine: runner/execution-engine.md
+      - Profile format: runner/profile-format.md
+      - Local testing: runner/local-testing.md
+      - Testnet testing: runner/testnet-testing.md
+      - Troubleshooting: runner/troubleshooting.md
+      - Security: runner/security.md
+  - Specification:
+      - Overview: spec/index.md
+      - Introduction: spec/introduction.md
+      - Architecture: spec/architecture.md
+      - Terminology: spec/terminology.md
+      - Behavioural model: spec/behavioral-model.md
+      - Authorization model: spec/authorization-model.md
+      - Event model: spec/event-model.md
+      - State model: spec/state-model.md
+      - Invariant model: spec/invariant-model.md
+      - Failure model: spec/failure-model.md
+      - Vector model: spec/vector-model.md
+      - Authoring a profile: spec/profile-authoring.md
+      - Versioning: spec/versioning.md
+      - Compatibility: spec/compatibility.md
+      - Governance: spec/governance.md
+      - Certification: spec/certification.md
+      - Schemas: spec/schemas.md
+      - Security: spec/security.md
+      - FAQ: spec/faq.md
+      - Profile index: spec/generated/profile-index.md
+      - Vector index: spec/generated/vector-index.md
