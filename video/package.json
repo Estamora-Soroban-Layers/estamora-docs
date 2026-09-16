@@ -1,0 +1,17 @@
+{
+  "name": "estamora-pitch",
+  "private": true,
+  "version": "1.0.0",
+  "description": "The committed pipeline that produces the Estamora product pitch, and the checks that keep it honest.",
+  "type": "module",
+  "scripts": {
+    "capture": "node capture.mjs",
+    "titles": "node make-title.mjs",
+    "verify": "node verify.mjs",
+    "install-browser": "playwright install --with-deps chromium"
+  },
+  "//": "Pinned exactly, and not to the oldest version that installs: Playwright's Chromium build is a different build per release, and 1.48 cannot decode the H.264 in this file -- the player then reports no metadata and the check fails for a reason that has nothing to do with the video. 1.63.0 was verified to decode it.",
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

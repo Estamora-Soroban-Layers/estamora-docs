@@ -8,8 +8,17 @@ which downloads rather than plays — release assets are served as
 
 The pipeline that produces it is committed here, which is the point. A pitch video is
 normally a binary artefact that exists in one place and can never be corrected when a figure
-in it goes stale. This one can be regenerated, and `video/verify` in CI is what keeps the
-figures in it honest.
+in it goes stale. This one can be regenerated, and `verify.mjs` -- run by the `video` job on
+every push -- is what decides whether it still is.
+
+**That check answers two different questions, and the second is the one nothing else asks.**
+Does the published file actually play in a browser, as opposed to being served? And is every
+figure the narration states still true? A video is a recording of a project at a moment, and
+nothing breaks when the project moves on: the file still plays, every link still resolves, and
+the voice calmly states a number that is now wrong. So the check reads the numbers out of the
+artefacts that own them -- the committed conformance report for the 63 checks, the seven
+dimensions and the 19 undecided vectors, the organization's repository list for the four
+project repositories -- and compares them with what the video says.
 
 ## Nothing in it is a mock-up
 
@@ -46,6 +55,13 @@ python3 tts.py          # synthesise the narration locally
 python3 compose.py      # render estamora-pitch.mp4
 ```
 
+And, at any time, without rendering anything:
+
+```bash
+npm install --prefix video      # one dependency, pinned
+node video/verify.mjs           # does it play, and is what it says still true?
+```
+
 | File | Does |
 | --- | --- |
 | `scenes.json` | The script: one entry per scene, with its shot, its caption and its narration |
@@ -53,6 +69,7 @@ python3 compose.py      # render estamora-pitch.mp4
 | `make-title.mjs` | The title and outro cards |
 | `tts.py` | Neural narration via piper, one file per scene, offline |
 | `compose.py` | ffmpeg: captions, fades, encode, and assertions on the result |
+| `verify.mjs` | The published file plays in a browser, and every figure the narration states still matches the artefact that owns it |
 
 ## Two decisions worth knowing
 
@@ -60,6 +77,12 @@ python3 compose.py      # render estamora-pitch.mp4
 cost, and the voice is a file. It also means the video can be rebuilt by anybody who checks
 out this repository, which is the difference between a committed artefact and a committed
 pipeline.
+
+**The Playwright version is pinned to the one that can decode this file.** Playwright ships a
+different Chromium build per release, and `1.48`'s cannot decode H.264: the element never reaches
+`HAVE_METADATA` and the check reports a broken player for a reason that has nothing to do with the
+video. `1.63.0` was verified to decode it. That is worth knowing before upgrading, because the
+symptom of getting it wrong looks exactly like the defect the check exists to find.
 
 **`compose.py` asserts what it produced.** It checks the finished file is 1920×1080, that its
 duration matches the sum of the scene durations within a second and a half, and that a scene
