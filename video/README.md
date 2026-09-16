@@ -72,7 +72,7 @@ node video/verify.mjs           # does it play, and is what it says still true?
 | `verify.mjs` | The published file plays in a browser, and every figure the narration states still matches the artefact that owns it |
 | `capture-readme-shots.mjs` | The stills the four READMEs embed, captured from the deployed sites |
 
-## Two decisions worth knowing
+## Three decisions worth knowing
 
 **The narration is synthesised locally, not by a hosted service.** No API key, no per-character
 cost, and the voice is a file. It also means the video can be rebuilt by anybody who checks
@@ -84,6 +84,17 @@ different Chromium build per release, and `1.48`'s cannot decode H.264: the elem
 `HAVE_METADATA` and the check reports a broken player for a reason that has nothing to do with the
 video. `1.63.0` was verified to decode it. That is worth knowing before upgrading, because the
 symptom of getting it wrong looks exactly like the defect the check exists to find.
+
+**The stills are captured without animations, and one of them cannot be reproducible.** The app
+animates a small status element, so the same unchanged page produced different bytes on consecutive
+captures — `app-overview` differed in a 10x4 CSS px region between two runs taken seconds apart. A
+README image that cannot be repeated cannot be regenerated without a diff nobody can explain, and a
+diff nobody can explain is one that gets committed anyway, so the capture now asks for reduced
+motion. That changed nothing about what the shots show, which is the point: it makes them
+repeatable. The exception is `app-live-contract`, which states the ledger it read and the ledger
+advances — three consecutive reads reported `4,710,322`, `4,710,323`, `4,710,323`. Expect a small
+diff there when re-capturing it, and check that it is confined to that figure: a diff anywhere else
+is a change to the page.
 
 **`compose.py` asserts what it produced.** It checks the finished file is 1920×1080, that its
 duration matches the sum of the scene durations within a second and a half, and that a scene
