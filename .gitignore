@@ -16,3 +16,10 @@ node_modules/
 # and this repository is documents and checks rather than code, so a `git add -A` after following
 # the guide would have committed an interpreter and a few thousand library files into it.
 .venv/
+
+# What running the tests leaves behind: the coverage database, the byte-code cache and pytest's
+# own. These appeared the moment the suite existed, which is the point at which an ignore rule
+# stops being hypothetical.
+.coverage
+__pycache__/
+.pytest_cache/
