@@ -1,0 +1,53 @@
+# CodeRabbit review configuration.
+#
+# The documentation site makes factual claims about four other repositories -- pinned
+# revisions, reported figures, and what the pitch video says. The instructions below ask a
+# reviewer to treat a stale figure as a defect, because on this site it is one.
+language: en-US
+early_access: false
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!site/**"
+    - "!build/**"
+    - "!.vercel/**"
+    - "!node_modules/**"
+  path_instructions:
+    - path: "docs/**/*.md"
+      instructions: >-
+        Numbers quoted here -- check counts, document counts, file sizes, pinned commits
+        -- are assertions about artefacts that change. Flag any figure that is not
+        derivable from a committed source of truth, and any figure that disagrees with
+        `scripts/check-pitch-references.py`.
+    - path: "docs/assets/**"
+      instructions: >-
+        The pitch video is served same-origin as `video/mp4` with byte-range support so it
+        plays inline. A link to the GitHub release asset instead of this path downloads
+        15 MB rather than playing it; flag any such link.
+    - path: "scripts/**"
+      instructions: >-
+        These checks are expected to be able to fail. A check that cannot fail is worse
+        than no check, so verify each one has a reachable failure path and a specific
+        message naming what is wrong.
+    - path: "mkdocs.yml"
+      instructions: >-
+        Uses `!ENV` tags, so it will not parse with a plain YAML loader. Nav entries must
+        resolve to files that exist; a dangling nav entry fails the build.
+  tools:
+    gitleaks:
+      enabled: true
+    actionlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    markdownlint:
+      enabled: true
+chat:
+  auto_reply: true
