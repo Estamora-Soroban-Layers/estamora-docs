@@ -44,7 +44,10 @@ import urllib.error
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SCAN = ["docs", "README.md", "CONTRIBUTING.md", "SECURITY.md"]
+# The documents this repository owns, including the changelog: this file is where a release's
+# compare and tag links live, and those are exactly the URLs that go stale when a tag is
+# renamed -- the one place a broken link is least likely to be noticed by reading the diff.
+SCAN = ["docs", "README.md", "CONTRIBUTING.md", "SECURITY.md", "CHANGELOG.md"]
 
 URL = re.compile(r"https?://[^\s\)\]\"'<>`]+")
 # Trailing punctuation that a sentence adds but a URL does not contain.
