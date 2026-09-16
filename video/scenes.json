@@ -1,0 +1,98 @@
+[
+  {
+    "id": "01-title",
+    "shot": "title",
+    "caption": "Estamora — behavioural conformance for Soroban",
+    "narration": "This is Estamora. It answers one question about a Soroban smart contract. Does it actually behave the way the standard it claims to implement requires? Not, does it compile. Not, does it expose the expected methods. What does it do."
+  },
+  {
+    "id": "02-problem",
+    "shot": "app-overview",
+    "caption": "Interface compatibility is a shape claim",
+    "narration": "That distinction matters more than it sounds. A contract can expose all ten methods of the token interface, with exactly the right signatures, pass every happy-path test, and still lose user funds. Because it verified that a signature was present, without verifying whose it was."
+  },
+  {
+    "id": "03-bug",
+    "shot": "code-guard",
+    "caption": "A real free-mint bug, from this project's own repository",
+    "narration": "Here is a real example, found in this project's own contract fixture. The burn function checked whether the holder had enough balance, then subtracted. Pass it a negative amount and the check is vacuously false, so the subtraction adds instead. Anyone could mint themselves unlimited supply, authorising only their own address. The fix was not a second check. The rule now exists once, and every entry point that moves value has to ask it."
+  },
+  {
+    "id": "04-model",
+    "shot": "docs-auth-model",
+    "caption": "Seven dimensions, authorization first-class",
+    "narration": "So Estamora measures behaviour across seven dimensions: interface, authorization, events, behaviour, state, invariants, and failure. Authorization is first-class, because the call failed, and the call failed for the right reason, are two different findings, and only one of them is a pass."
+  },
+  {
+    "id": "05-layers",
+    "shot": "org-profile",
+    "caption": "Four repositories, one contract between them",
+    "narration": "Estamora is four repositories with one contract between them. The specification defines what conformance means: profiles, vectors, schemas. The runner measures it, and is the only thing that produces a verdict. Nothing in the specification format depends on the runner, so a second implementation in another language is a supported outcome, not a rewrite."
+  },
+  {
+    "id": "06-cli",
+    "shot": "terminal-help",
+    "caption": "Six commands, one verdict",
+    "narration": "The runner is a single binary with six commands, and only one of them reaches a verdict. Validate and profile deploy nothing at all. Inspect deploys and reads the interface, and says plainly that an interface is not evidence of behaviour."
+  },
+  {
+    "id": "07-run",
+    "shot": "terminal-run",
+    "caption": "A real run against a fixture wrong in exactly one way",
+    "narration": "Here is a real run, captured from the release binary. The fixture is wrong in exactly one way: transfer never calls require auth. The profile notices it in the authorization plan, the refusal, the events, the state, and the failure category. Five dimensions, from one missing line."
+  },
+  {
+    "id": "08-verdict",
+    "shot": "terminal-verdict",
+    "caption": "Exit 1 is the only code that blames the contract",
+    "narration": "The verdict is partially conformant, and the process exits one. That number is a contract, not a convention. One is the only exit code that names the contract as at fault. An unreachable node exits four. A malformed profile exits three. A runner that reported a network outage as a contract failure would teach its users to distrust every failure it ever reports."
+  },
+  {
+    "id": "09-report",
+    "shot": "app-report",
+    "caption": "The report is the artefact that carries the claim",
+    "narration": "The report is the artefact that carries the claim, and it is a normative JSON document. This application renders one. It shows the verdict, every dimension, every vector, and the digests that tie the result to an exact revision of the requirements and an exact corpus of vectors. That is what makes a verdict reproducible, rather than merely repeatable."
+  },
+  {
+    "id": "10-audit",
+    "shot": "app-report-audit",
+    "caption": "It audits the report before it displays it",
+    "narration": "But a report is only worth rendering if it can be trusted, so the application checks it first. Nine rules, each one a claim the format makes about itself. Does the recorded exit code match the status. Does the vector count match the results. Is every undecided vector explained. Those findings appear above the report, not hidden behind it. A document that contradicts itself has already told two different stories."
+  },
+  {
+    "id": "11-live",
+    "shot": "app-inspector",
+    "caption": "Live reads on testnet, and no way to submit",
+    "narration": "The second view reads a contract deployed to Soroban testnet. Every call is a simulation: nothing is signed and nothing is submitted. That is enforced structurally rather than promised, because the repository contains no code that submits a transaction. There is no signing path to disable, and no key to leak."
+  },
+  {
+    "id": "12-honesty",
+    "shot": "docs-report-format",
+    "caption": "Zero failures, and still not conformant",
+    "narration": "Two things make this evidence trustworthy, even when the number is unflattering. The digests, so a reviewer can fetch the same revision and check that the same verdict follows. And the honesty. The worked example reports sixty-three checks across all seven dimensions, with zero failed. It is still not conformant, because nineteen of its twenty vectors need seeded state that a read-only measurement cannot arrange. That is the most misreadable thing about a conformance report, and the application leads with it."
+  },
+  {
+    "id": "13-ci",
+    "shot": "docs-exit-codes",
+    "caption": "In a pipeline, the exit code is the integration",
+    "narration": "In a pipeline, the exit-code contract is the whole integration. Fail on one. Retry on four. And never treat two as a pass, because inconclusive means the measurement did not settle the question."
+  },
+  {
+    "id": "14-docs",
+    "shot": "docs-home",
+    "caption": "Documentation assembled, not duplicated",
+    "narration": "The documentation is assembled at build time from tagged revisions of both source repositories. Nothing is copied. So a published page cannot change under its URL without a commit in the repository that owns it, and a normative document never exists in two places that can disagree."
+  },
+  {
+    "id": "15-open",
+    "shot": "org-issues",
+    "caption": "Built to be contributed to",
+    "narration": "And it is built to be contributed to. Ten open issues on the runner, two on the specification, scoped and labelled. The architecture is a data format with two implementations around it, which leaves room for a third."
+  },
+  {
+    "id": "16-outro",
+    "shot": "outro",
+    "caption": "Estamora — conformance is not security",
+    "narration": "Estamora. Behavioural conformance for Soroban. The specification, the runner, the documentation, and the application that shows you the evidence, and then questions it. All four repositories are public, and the contract is live on testnet today."
+  }
+]

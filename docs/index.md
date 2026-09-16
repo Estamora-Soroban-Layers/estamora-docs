@@ -5,6 +5,14 @@ contract, and how to tell what a verdict means.** Start at
 [Installation](getting-started/installation.md), then
 [Your first measurement](getting-started/first-measurement.md).
 
+<a href="https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4">
+  <img src="assets/pitch-thumbnail.png" alt="Watch the five-minute Estamora product pitch" width="100%">
+</a>
+
+**▶ [Watch the five-minute product pitch](https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4)**
+— every frame of it is a live deployment or real program output, and the pipeline that made it
+is in [`video/`](https://github.com/Estamora-Soroban-Layers/estamora-docs/tree/main/video).
+
 <div class="grid cards" markdown>
 
 - **Get running**
