@@ -3,3 +3,11 @@ build/
 site/
 .vercel
 .env*
+
+# The video pipeline's dependency, installed by `npm install --prefix video`. It was not ignored
+# until that pipeline gained a package.json, which is exactly the window in which a `git add -A`
+# would have committed several thousand files into a repository of documents.
+node_modules/
+
+# Playwright's downloaded browsers, if a run puts them somewhere local.
+.cache/
