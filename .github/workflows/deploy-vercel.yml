@@ -121,10 +121,15 @@ jobs:
         # The content type is the *host's* decision rather than the file's, so this is asserted
         # against the deployed origin and not against the build output. This is also the step
         # that waits for the alias, so that the checks below can rely on it having moved.
+        #
+        # The deployment URL the CLI returns is *not* checked, deliberately. It is behind Vercel
+        # Authentication: an unauthenticated request for it answers `302` to an SSO prompt with
+        # `content-type: text/plain`, and that is a protection working rather than a deployment
+        # being broken. The only URL a reader can reach is the alias, so the alias is the only
+        # thing worth asserting.
         run: |
           set -euo pipefail
 
-          deployment="${{ steps.deploy.outputs.url }}"
           alias="https://estamora-docs.vercel.app"
           video="/assets/estamora-pitch.mp4"
 
@@ -145,19 +150,18 @@ jobs:
             [ "$code" = "206" ] || { echo "::error::a byte-range request to $url returned $code, not 206"; return 1; }
           }
 
-          echo "the deployment this job published:"
-          check_playable "$deployment$video"
-
           echo "the production alias, once the edge has switched to it:"
-          for attempt in 1 2 3 4 5 6 7 8; do
+          deadline=12
+          for attempt in $(seq 1 "$deadline"); do
             if check_playable "$alias$video"; then
-              echo "::notice::the production alias serves the pitch (attempt $attempt)"
+              echo "::notice::the production alias serves playable video (attempt $attempt)"
               break
             fi
-            if [ "$attempt" = "8" ]; then
-              echo "::error::the production alias still does not serve playable video after 8 attempts"
+            if [ "$attempt" = "$deadline" ]; then
+              echo "::error::the production alias did not serve playable video within $deadline attempts; the deployment is published but the edge has not switched, or the response is not media"
               exit 1
             fi
+            echo "  not yet; waiting 15s"
             sleep 15
           done
 
