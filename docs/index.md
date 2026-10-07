@@ -1,92 +1,67 @@
-# Estamora documentation
+# Estamora Documentation
 
-**This is the reader's documentation for Estamora: what it is for, how to run it against a
-contract, and how to tell what a verdict means.** Watch the five-minute pitch below, then
-start at [Installation](getting-started/installation.md) and
-[Your first measurement](getting-started/first-measurement.md).
+**Estamora** is a policy-guarded payments and milestone escrow protocol built on **Stellar (Soroban)**.
 
-<video controls preload="metadata" playsinline poster="assets/pitch-thumbnail.png" width="100%">
-  <source src="assets/estamora-pitch.mp4" type="video/mp4">
-  <a href="assets/estamora-pitch.mp4">Download the five-minute pitch</a> (MP4, 15 MB).
-</video>
+It provides trust-minimized multi-party escrow, autonomous agent spend limits, and pre-flight transaction simulation to protect merchants, buyers, and automated workflows from failures, fraud, and budget overruns.
 
-**Five minutes**, and every frame of it is a live deployment or real program output: the
-release binary failing a fixture, the deployed applications, and the report the runner
-produced over testnet RPC. The pipeline that made it is in
-[`video/`](https://github.com/Estamora-Soroban-Layers/estamora-docs/tree/main/video), and a
-permanent [archived copy](https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4)
-is attached to the `pitch-v1` release.
+---
 
 <div class="grid cards" markdown>
 
-- **Get running**
+- **Core Smart Contracts**
 
     ---
 
-    Install the runner, point it at a specification checkout, and measure a contract.
+    Explore the Rust Soroban smart contract architecture, milestone releases, timeout refunds, and dispute mediation.
 
-    [Installation :material-arrow-right:](getting-started/installation.md)
+    [Smart Contracts Reference :material-arrow-right:](reference/contracts.md)
 
-- **Put it in a pipeline**
-
-    ---
-
-    Use the exit-code contract and the JUnit rendering as a gate, without turning a
-    network outage into a failed release.
-
-    [CI integration :material-arrow-right:](runner/ci-integration.md)
-
-- **Understand a verdict**
+- **TypeScript SDK**
 
     ---
 
-    What `CONFORMANT`, `NON_CONFORMANT`, `INCONCLUSIVE`, `PROFILE_ERROR` and
-    `EXECUTION_ERROR` each commit you to.
+    Integrate `@estamora/sdk`, pre-flight simulation, and error decoding into your web application or backend service.
 
-    [Exit codes :material-arrow-right:](reference/exit-codes.md)
+    [SDK Reference :material-arrow-right:](reference/sdk.md)
 
-- **Read the standard**
+- **Merchant & Buyer DApp**
 
     ---
 
-    The normative specification: profiles, schemas and vectors, where every schema
-    `$id` resolves.
+    Use the interactive web console deployed live at [estamora-app.vercel.app](https://estamora-app.vercel.app) to manage escrows and spend caps.
 
-    [Specification :material-arrow-right:](https://estamora-soroban-layers.github.io/estamora-conformance-spec/)
+    [Application Console :material-arrow-right:](reference/app.md)
+
+- **Protocol Architecture**
+
+    ---
+
+    Understand the 3-tier system design, state invariants, and delegated spend cap security models.
+
+    [The 3-Tier Architecture :material-arrow-right:](concepts/the-layers.md)
 
 </div>
 
-## The question Estamora answers
+---
 
-> Does this Soroban contract actually behave according to the standard or interface
-> profile it claims to implement?
+## The Problems Estamora Solves
 
-Not *does it compile*, and not *does it expose the expected methods*. Interface
-compatibility is a **shape** claim. Behavioural conformance is a claim about **what
-happens**: which principal must authorize which call and over which arguments, which events
-must be emitted and what they must correspond to in state, what a failed call must leave
-behind, and which properties must survive every call.
+1. **Unprotected Commerce & High-Risk Agreements**  
+   Traditional transfers on Stellar finalize irreversibly in 3–5 seconds. If a merchant fails to fulfill goods or services, the buyer has zero on-chain recourse. Estamora provides progressive milestone release, automated timeout refunds, and mediator arbitration.
 
-A contract that verifies *a* signature is present, without verifying *whose*, passes every
-test that only asks whether the unauthorized call failed. It does fail — for the wrong
-reason. See [The layers, and who owns what](concepts/the-layers.md).
+2. **Unbounded Agent Spends & Rogue Workflows**  
+   Autonomous AI agents and automated services need delegated allowances, but granting full private key access risks catastrophic fund loss. Estamora introduces on-chain 24-hour rolling spend caps and per-call limits.
 
-## What is where
+3. **Silent Failures & Blind Submissions**  
+   Transactions submitted with insufficient allowances, expired timeouts, or invalid state waste fees and fail silently. The `@estamora/sdk` engine simulates every call before wallet signing, scoring risk and explaining exact contract error codes.
 
-| Repository | Role |
-| --- | --- |
-| [`estamora-conformance-spec`](https://github.com/Estamora-Soroban-Layers/estamora-conformance-spec) | **Defines** conformance. The normative layer. |
-| [`estamora-conformance-runner`](https://github.com/Estamora-Soroban-Layers/estamora-conformance-runner) | **Measures** conformance. The `estamora` binary. |
-| [`estamora-docs`](https://github.com/Estamora-Soroban-Layers/estamora-docs) | **Explains** it. This site. |
-| [`estamora-app`](https://github.com/Estamora-Soroban-Layers/estamora-app) | **Shows** it. The web application. |
+---
 
-## Conformance is not security
+## Ecosystem Repositories
 
-A `CONFORMANT` verdict means the contract behaved as a **named profile version** requires
-over a **named corpus** of vectors. Profiles are written by people; a profile that does not
-state a failure mode does not detect it.
-
-Estamora does not replace formal verification, a security audit, penetration testing or
-economic analysis, and a conformant contract can still be exploitable. Read the
-[specification's security page](spec/security.md) and the
-[runner's](runner/security.md) before quoting a verdict to anyone.
+| Repository | Role | Technology |
+| :--- | :--- | :--- |
+| [`estamora-contracts`](https://github.com/Estamora-Soroban-Layers/estamora-contracts) | Smart contract engine | Rust, Soroban SDK v22.0.8, WebAssembly |
+| [`estamora-sdk`](https://github.com/Estamora-Soroban-Layers/estamora-sdk) | Client SDK & Pre-flight engine | TypeScript, `@stellar/stellar-sdk` |
+| [`estamora-app`](https://github.com/Estamora-Soroban-Layers/estamora-app) | Merchant & Buyer Web Console | React 19, Vite, Freighter Wallet |
+| [`estamora-docs`](https://github.com/Estamora-Soroban-Layers/estamora-docs) | Protocol Documentation | MkDocs Material |
