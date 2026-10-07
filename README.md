@@ -1,195 +1,42 @@
-# estamora-docs
+# Estamora Documentation Hub
 
-**The documentation site for [Estamora](https://github.com/Estamora-Soroban-Layers): what
-behavioural conformance is for, how to measure a Soroban contract, and how to tell what a
-verdict means.**
+[![Live Docs](https://img.shields.io/badge/Vercel-Live_Documentation-4ade80.svg)](https://estamora-docs.vercel.app)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-[![CI](https://github.com/Estamora-Soroban-Layers/estamora-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/Estamora-Soroban-Layers/estamora-docs/actions/workflows/ci.yml)
-[![Specification](https://img.shields.io/badge/spec-estamora--spec-blue)](https://estamora-soroban-layers.github.io/estamora-conformance-spec/)
-[![Deployed on Vercel](https://img.shields.io/badge/vercel-estamora--docs.vercel.app-black?logo=vercel)](https://estamora-docs.vercel.app)
-[![Application](https://img.shields.io/badge/app-estamora--app.vercel.app-black?logo=vercel)](https://estamora-app.vercel.app)
-[![Product pitch](https://img.shields.io/badge/watch-5--minute%20pitch-blueviolet)](https://estamora-docs.vercel.app/assets/estamora-pitch.mp4)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Contributors](https://img.shields.io/github/contributors/Estamora-Soroban-Layers/estamora-docs)](https://github.com/Estamora-Soroban-Layers/estamora-docs/graphs/contributors)
+> **Guides, smart contract architecture, SDK references, and testnet verification for the Estamora Payment Protocol on Stellar.**
 
-**Read it: <https://estamora-docs.vercel.app>**
+**Live Documentation**: **[https://estamora-docs.vercel.app](https://estamora-docs.vercel.app)**  
+**Live DApp**: **[https://estamora-app.vercel.app](https://estamora-app.vercel.app)**
 
 ---
 
-## Watch the pitch
+## The Estamora Protocol Stack
 
-<a href="https://estamora-docs.vercel.app/assets/estamora-pitch.mp4">
-  <img src="docs/assets/pitch-thumbnail.png" alt="Watch the five-minute Estamora product pitch" width="720">
-</a>
+| Component | Repository | Role | Technology |
+| :--- | :--- | :--- | :--- |
+| **Smart Contracts** | [**`estamora-contracts`**](https://github.com/Estamora-Soroban-Layers/estamora-contracts) | Milestone escrow, timeout auto-refunds, and delegated spend caps | Rust, Soroban SDK v27.0.6 |
+| **Client SDK** | [**`estamora-sdk`**](https://github.com/Estamora-Soroban-Layers/estamora-sdk) | Zero-broadcast pre-flight simulation, error decoding, and TypeScript client | TypeScript, `@stellar/stellar-sdk` |
+| **DApp Console** | [**`estamora-app`**](https://github.com/Estamora-Soroban-Layers/estamora-app) | Merchant dashboard, interactive checkout demo, and Freighter wallet operator console | React 19, Vite, `@stellar/freighter-api` |
+| **Documentation** | [**`estamora-docs`**](https://github.com/Estamora-Soroban-Layers/estamora-docs) | Guides, API reference, and specification hub (this repository) | Documentation & Architecture |
 
-**[Five minutes, 1920×1080, no sign-in.](https://estamora-docs.vercel.app/assets/estamora-pitch.mp4)**
-Every frame is a live deployment or output a program actually produced — the captured terminal
-transcripts come from the release binary, and the application screenshots come from the
-deployed site. The pipeline that builds it is committed in [`video/`](video/), so the video can
-be regenerated rather than decaying into an artefact nobody can correct.
+---
 
-The link above points at the published site, which serves the file as `video/mp4` with byte
-ranges so the browser plays it in place. It deliberately does **not** point at the release
-asset: GitHub serves those as `application/octet-stream` with
-`content-disposition: attachment`, so the same bytes become a 15 MB download instead of a
-video. The [immutable release copy](https://github.com/Estamora-Soroban-Layers/estamora-docs/releases/download/pitch-v1/estamora-pitch.mp4)
-is there as an archival download.
+## Key Protocols & Primitives
 
-## What the site looks like
+1. **Milestone Escrow**: Dual-party programmable custody where buyer funds remain locked in the contract until the seller satisfies deliverables, with an automated fallback refund if the timeout expires.
+2. **Autonomous Agent Spend Caps**: On-chain guardrails allowing secondary accounts (AI agents, microservices) to spend funds up to a strict per-transaction and rolling 24-hour ceiling.
+3. **Pre-Flight Simulation Engine**: Zero-gas evaluation querying Soroban Testnet RPC to calculate exact CPU instructions and stroop resource fees prior to wallet signing.
 
-![The documentation site landing page](docs/assets/screenshots/docs-landing.png)
+---
 
-Captured from [estamora-docs.vercel.app](https://estamora-docs.vercel.app) by
-[`video/capture-readme-shots.mjs`](video/capture-readme-shots.mjs), so it shows the deployed site
-rather than a local MkDocs preview. The landing page is where the pitch player, the pinned
-document sets and the reference converge.
+## Community & Drips Wave Sprints
 
-## What this repository is, and what it deliberately is not
+- 💬 **Telegram**: [Estamora Community](https://t.me/estamora_stellar)
+- 👾 **Discord**: [Estamora Developers](https://discord.gg/estamora-dev)
+- 👤 **Maintainer**: [@winningtalker-commits](https://github.com/winningtalker-commits)
 
-It is the reader's documentation: installation, a first measurement, CI integration, and the
-reference for the command line, exit codes, error classes and report format.
-
-It is **not** a second copy of the specification. The normative documents — the profiles, the
-JSON Schemas and the test vectors — have a canonical home at
-<https://estamora-soroban-layers.github.io/estamora-conformance-spec/>, which is where every
-schema `$id` resolves.
-
-Copying them here would mean a normative document existing in two places that can disagree.
-That is the specific class of defect the specification repository already spends a validation
-job preventing *between its own profiles and schemas*; introducing it between a document and
-its published rendering would be a regression, in a project whose entire claim is that it is
-careful about drift.
-
-## How the site is assembled
-
-Nothing is copied into this repository. The site is **assembled at build time** from pinned
-revisions of the two source repositories:
-
-| Section | Source | Pin |
-| --- | --- | --- |
-| Home, Getting started, Concepts, Reference | this repository, `docs/` | — |
-| Runner guide | `estamora-conformance-runner` → `docs/*.md` | `v0.1.3` |
-| Specification | `estamora-conformance-spec` → `docs/**` | `v0.1.1` |
-
-```mermaid
-flowchart LR
-    C["estamora-docs/docs (curated, 7 pages)"] --> A[assemble-docs.sh]
-    R["estamora-conformance-runner@v0.1.3 docs/"] --> A
-    S["estamora-conformance-spec@v0.1.1 docs/"] --> A
-    A --> B["build/docs (39 documents)"]
-    B --> M["mkdocs build (strict)"]
-    M --> D["site/ → Vercel"]
-```
-
-Two consequences that make this worth the assembly step:
-
-1. **A page on the site traces to a commit in the repository that owns it.** The pin is a
-   tag, not a branch, so a published page cannot change under its URL without a commit here.
-2. **The navigation enumerates every page.** Because the page set is fixed by the tags, a
-   document cannot appear on the published site without a commit here that names it.
-
-The documents' relative links (`](../schema/…)`, `](../VERSIONING.md)`) are rewritten during
-assembly to the absolute URL that actually serves them. That is deliberate: rewriting keeps
-`strict: true` link validation meaningful. With those links broken on purpose, MkDocs would
-have to be told to ignore broken links — and it would then also ignore a genuine one.
-
-## Building it
-
-Requires Python 3.12 or later.
-
-```bash
-python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements-docs.txt
-
-./scripts/build-site.sh              # assemble + render into ./site
-./scripts/build-site.sh /tmp/out     # somewhere else
-```
-
-One entry point for CI and for a contributor, because the two must not build different sites.
-It asserts the assembled document count and the rendered page count, so a site that builds
-successfully while missing its content fails instead of publishing.
-
-To build against local checkouts instead of the pinned tags — the usual case while working on
-a sibling repository:
-
-```bash
-ESTAMORA_RUNNER_REPO=../estamora-conformance-runner \
-ESTAMORA_SPEC_REPO=../estamora-conformance-spec \
-  ./scripts/build-site.sh
-```
-
-With neither set, the script uses a sibling checkout when one exists and otherwise clones the
-pinned tag into `.vendor/`.
-
-## Deploying it
-
-Deployment is CI-driven. `.github/workflows/deploy-vercel.yml` builds the site and publishes
-the built artefact to Vercel on every push to `main`, so what is deployed is what CI built and
-validated — not a second build on a different machine.
-
-Vercel does not build this site. Its build step is `scripts/assert-built.sh`, which asserts
-the artefact exists rather than producing it. Publishing nothing is worse than publishing
-nothing *updated*, because the site is where the documentation is read.
-
-| | |
-| --- | --- |
-| Production | <https://estamora-docs.vercel.app> |
-| Project | `estamora-docs` (team `winningtalker-commits`) |
-
-## Checks
-
-Nine job-level checks. Each fails for a different reason, so a red build names the problem.
-
-| Workflow | What it enforces |
-| --- | --- |
-| `ci.yml` → build | The site assembles and renders with `strict: true`, and contains the pages it should. |
-| `ci.yml` → pins | The pinned revisions still resolve upstream, and reports when a newer tag exists. |
-| `ci.yml` → video | The pitch plays from the site, and the figures its narration states are still true of the artefacts that own them. |
-| `ci.yml` → links | Every external URL in the curated documentation resolves. |
-| `ci.yml` → navigation | Every curated document is reachable from the navigation, and every non-assembled nav target exists on disk. |
-| `ci.yml` → pitch | Every reference to the pitch keeps it **playable**: a playback link points at this site, the archival link uses an immutable tag, and the player declares its MIME type. A release asset is served `content-disposition: attachment`, so a link to one downloads 15 MB instead of playing it — a defect that shipped once, because every header check passed. |
-| `ci.yml` → hardening | Every workflow job declares a timeout and explicit permissions, and no workflow uses `pull_request_target`. |
-| `ci.yml` → tests | The checks themselves are tested, with a coverage floor, and the ones that need nothing external still run **as scripts** — which is the only thing that executes their `__main__` blocks. |
-| `deploy-vercel.yml` | A push to `main` publishes the artefact CI built, then asserts the published URLs, including the video as `video/mp4` with byte-range support. |
-
-The four checks that need nothing installed — `links`, `navigation`, `pitch`, `hardening` — run
-without a dependency setup beyond PyYAML, because a check that runs in a second is one that cannot
-fail for an unrelated reason.
-
-## Test coverage
-
-Measured with `python3 -m pytest tests --cov=scripts`, with the floor enforced in CI:
-
-| Metric     | Measured | Floor enforced |
-| ---------- | -------- | -------------- |
-| Statements | 98.3%    | 70%            |
-
-The denominator matters more than the figure, so it is stated here rather than left to a config
-file. The scope is `scripts/*.py`: the five checks that this repository runs against itself, which
-is the code a contributor can actually break. What is **not** in the figure:
-
-| Path                 | In the figure | Why                                                                                          |
-| -------------------- | ------------- | -------------------------------------------------------------------------------------------- |
-| `scripts/*.sh`       | no            | Entry points. They are shell, and the job above runs them rather than measuring them.         |
-| `video/*.py`         | no            | The narration and composition pipeline needs piper and ffmpeg, and is what the `video` job verifies instead: it plays the published file and re-checks every figure the narration states. |
-| `sys.exit(main())`   | no            | The five lines an in-process test cannot reach — which is why the checks are also run as scripts. |
-
-Writing these tests found a defect in one of the checks, which is the argument for having them.
-`check-deployed-links.py` claimed in its docstring to resolve a page's player and poster, and its
-pattern only read `src` and `href` — so the landing page's poster, the one attribute naming an
-image this repository has to publish, was never asserted. A poster that resolves to nothing renders
-as an empty box, which reads as a styling problem rather than as a missing file.
-
-## Contributing
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md). A documentation change that contradicts a pinned
-document is a change to the *pin*, or a change in the repository that owns the document —
-never a quiet edit here.
-
-## Security
-
-See [`SECURITY.md`](SECURITY.md).
+---
 
 ## License
 
-Apache-2.0. See [`LICENSE`](LICENSE).
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
