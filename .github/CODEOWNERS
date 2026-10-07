@@ -1,0 +1,6 @@
+# Code owners for estamora-docs
+
+*                                              @winningtalker-commits
+/docs/                                         @winningtalker-commits
+/mkdocs.yml                                    @winningtalker-commits
+/SECURITY.md                                   @winningtalker-commits
