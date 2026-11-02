@@ -9,6 +9,6 @@
 # PyYAML is here because one of the checks parses `mkdocs.yml`. It is also installed, on its own,
 # by the navigation job — deliberately, since that job's whole design is to need almost nothing
 # so that a failure in it cannot come from a dependency.
-pytest==9.1.1
+pytest==9.2.0
 pytest-cov==7.1.0
 PyYAML==6.0.3
